@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>AJAX Request</title>
+	</head>
+	<body>
+		<div style="
+		font-size: 35px;
+		font-weight: 700;
+		">
+			Бэкендеру<br>
+		</div>
+		<div style="
+		font-size: 26px;
+		">
+			PHP, MySQL, JSON<br>
+			(объем работы до 2 часов)<br>
+			<img src="open22cart.jpg" style="
+			/*max-width: 445px;*/
+			"><br>
+			Скрипт должен читать информацию из базы данных и отдавать в формате JSON в ответ на AJAX-запрос клиента.
+			
+		</div><br>
+		<p>Исполняемые файлы:</p>
+		<a href="ajax.php_" download>ajax.php</a><br>
+		<a href="test10.sql" download>mysql</a><br>
+		<a href="ajax.js" download>ajax.js</a><br><br><br><br>
+
+		<button id="ajaxButton" style="
+		appearance: none;
+		background: blue;
+		color: white;
+		padding: 15px 40px;
+		border-radius: 9px;
+		">Выполнить AJAX-запрос</button><br><br>
+		<div id="result"></div>  <br><br>
+		<canvas id="revenueChart" width="600" height="200"></canvas>
+		<div id="resultTable"></div>  <br><br>
+		<script>
+			document.getElementById("ajaxButton").addEventListener("click", function() {
+				
+				var xhr = new XMLHttpRequest();
+				
+				xhr.open("POST", "ajax.php", true);
+				xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+				
+				xhr.onload = function() {
+					if (xhr.status >= 200 && xhr.status < 300) { 
+						var response = JSON.parse(xhr.responseText);
+						console.log(response);
+						
+						 displayChart(response);
+						document.getElementById("result").innerHTML = "<pre>" + JSON.stringify(response, null, 2) + "</pre>";
+						
+						
+						var table = "<table border='1'>";
+						for (var key in response[0]) {
+							table += "<tr><td><strong>";
+							
+							// Заменяем имена столбцов
+							if (key === 'revenue') {
+								table += "Выручка, руб";
+								} else if (key === 'cash') {
+								table += "Наличные";
+								
+								
+								} else if (key === 'cash') {
+								table += "Наличные";
+								
+								} else if (key === 'cashless_payment') {
+								table += "Безналичный расчет";
+								} else if (key === 'credit_cards') {
+								table += "Кредитные карты";
+								} else if (key === 'average_check') {
+								table += "Средний чек, руб";
+								} else if (key === 'the_average_guest') {
+								table += "Средний гость, руб";
+								} else if (key === 'deletion_from_the_receipt_after_payment') {
+								table += "Удаление из чека после оплаты, руб";
+								} else if (key === 'deletion_from_the_receipt_before_payment') {
+								table += "Удаление из чека до оплаты, руб";
+								} else if (key === 'number_of_checks') {
+								table += "Количество чеков";
+								} else if (key === 'number_of_guests') {
+								table += "Количество гостей";
+								} else {
+								table += key;   
+							}
+							
+							table += "</strong></td>";
+							
+							 
+							for (var i = 0; i < 2;  i++) {
+								table += "<td>" + response[i][key] + "</td>";
+							}
+							table += "</tr>";
+						}
+						
+						table += "</table>";
+						
+						
+						document.getElementById("resultTable").innerHTML = table;
+						
+						
+						} else { 
+						console.error(xhr.statusText);
+					}
+				};
+				
+				var data = {
+					query: "SELECT * FROM `test10` ORDER BY `test10`.`date` DESC"
+				};
+				
+				var jsonData = JSON.stringify(data);
+				
+				xhr.send(jsonData);
+			});
+			
+function displayChart(response) {
+    var labels = response.map(entry => entry.date);
+    var data = response.map(entry => entry.revenue);
+
+    var ctx = document.getElementById('revenueChart').getContext('2d');
+    var myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Выручка, руб',
+                data: data,
+                borderColor: '#04774c',
+                borderWidth: 4,
+                fill: false
+            }]
+        }
+    });
+}
+		</script>
+		<style>
+		canvas{
+		max-width:700px
+		}
+		</style>
+	</body>
+</html>
+
+
